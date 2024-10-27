@@ -1,0 +1,30 @@
+---
+- name: Extended Ansible Playbook for Docker Nodes
+  hosts: all
+
+  tasks:
+  - name: Ensure SSH is running on all nodes
+    ansible.builtin.service:
+      name: ssh
+      state: started
+    become: yes
+
+  - name: Open firewall for ports 8001-8003 on node1, node2, and node3
+    ansible.builtin.iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: "{{ item }}"
+      jump: ACCEPT
+    loop:
+      - 8001
+      - 8002
+      - 8003
+    become: yes
+
+  - name: Verify connectivity to node1, node2, and node3
+    ansible.builtin.command: nc -zv 127.0.0.1 "{{ item }}"
+    loop:
+      - 8001
+      - 8002
+      - 8003
+
